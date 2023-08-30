@@ -3,7 +3,7 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { nanoid } from 'nanoid';
-import { API } from './fetch_api';
+// import * as API from './fetch_api';
 import Filter from './filter';
 import ContactList from './contact';
 import ContactForm from './forms';
