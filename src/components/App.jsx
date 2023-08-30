@@ -3,6 +3,7 @@
 import { Component } from 'react';
 import PropTypes from 'prop-types';
 import { nanoid } from 'nanoid';
+import { API } from './fetch_api';
 import Filter from './filter';
 import ContactList from './contact';
 import ContactForm from './forms';
@@ -39,6 +40,11 @@ class App extends Component {
 		const savedContacts = this.state.contacts;
 		localStorage.setItem('contacts', JSON.stringify(savedContacts));
 	};
+
+	// async componentDidMount() {
+	// 	const dataLoad = await API.fetchGet();
+	// 	console.log('🚀 ~ file: App.jsx:29 ~ App ~ componentDidMount ~ dataLoad:', dataLoad);
+	// }
 
 	handlerOnChange = ({ target }) => {
 		this.setState({
