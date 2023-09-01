@@ -15,6 +15,8 @@ class ContactList extends Component {
 		).isRequired,
 		filter: PropTypes.string,
 		onDeleteContact: PropTypes.func.isRequired,
+		onEdit: PropTypes.func.isRequired,
+		enable: PropTypes.bool.isRequired,
 	};
 
 	render() {
@@ -27,7 +29,14 @@ class ContactList extends Component {
 						return searchName.includes(filterName);
 					})
 					.map(({ id, name, number }) => (
-						<div className='contact-containet' key={id}>
+						<div
+							className='contact-containet'
+							key={id}
+							onClick={this.props.onEdit}
+							data-id={id}
+							data-name={name}
+							data-number={number}
+						>
 							<p className='contact'>
 								{name} {number}
 							</p>
@@ -36,6 +45,7 @@ class ContactList extends Component {
 								className='del-button button'
 								type='submit'
 								onClick={this.props.onDeleteContact}
+								disabled={this.props.enable}
 							>
 								Delete
 							</button>

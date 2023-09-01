@@ -8,8 +8,16 @@ import './style.css';
 
 class ContactForm extends Component {
 	state = {
+		id: '',
 		name: '',
 		number: '',
+	};
+
+	componentDidUpdate = (prevProps, prevState) => {
+		const { id, name, number, edit } = this.props.onEditValue;
+		if (prevProps.onEditValue !== this.props.onEditValue && edit) {
+			this.setState({ id, name, number });
+		}
 	};
 
 	static propTypes = {
@@ -21,6 +29,12 @@ class ContactForm extends Component {
 			})
 		).isRequired,
 		onSubmitForm: PropTypes.func.isRequired,
+		onEditValue: PropTypes.exact({
+			id: PropTypes.string,
+			name: PropTypes.string,
+			number: PropTypes.string,
+			edit: PropTypes.bool.isRequired,
+		}),
 	};
 
 	schema = yup.object({
@@ -50,7 +64,7 @@ class ContactForm extends Component {
 				const checkName = this.props.contacts.find(
 					contact => contact.name.toLowerCase() === this.state.name.toLowerCase()
 				);
-				if (checkName) {
+				if (checkName && !this.props.onEditValue.edit) {
 					alert(`${checkName.name} is already in contacts.`);
 					return;
 				}

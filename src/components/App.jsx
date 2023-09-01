@@ -2,8 +2,8 @@
 
 import { Component } from 'react';
 import PropTypes from 'prop-types';
-import { nanoid } from 'nanoid';
-// import * as API from './fetch_api';
+import { Notify } from 'notiflix';
+import * as API from './fetch_api';
 import Filter from './filter';
 import ContactList from './contact';
 import ContactForm from './forms';
@@ -17,7 +17,9 @@ class App extends Component {
 			{ id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
 			{ id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
 		],
+		contact: { id: '', name: '', number: '', edit: false },
 		filter: '',
+		active: false,
 	};
 
 	static propTypes = {
@@ -25,26 +27,21 @@ class App extends Component {
 		number: PropTypes.string,
 	};
 
-	componentDidMount = () => {
+	async componentDidMount() {
 		try {
-			const savedContacts = JSON.parse(localStorage.getItem('contacts'));
-			if (savedContacts) {
+			const savedContacts = await API.fetchGet();
+			if (savedContacts.length > 0) {
 				this.setState({ contacts: savedContacts, filter: '' });
 			}
-		} catch (error) {
-			console.log('🚀', error);
+		} catch ({ message }) {
+			Notify.failure(`${message}`);
 		}
-	};
+		window.addEventListener('keydown', this.onClearForm);
+	}
 
-	componentDidUpdate = () => {
-		const savedContacts = this.state.contacts;
-		localStorage.setItem('contacts', JSON.stringify(savedContacts));
-	};
-
-	// async componentDidMount() {
-	// 	const dataLoad = await API.fetchGet();
-	// 	console.log('🚀 ~ file: App.jsx:29 ~ App ~ componentDidMount ~ dataLoad:', dataLoad);
-	// }
+	componentWillUnmount() {
+		window.removeEventListener('keydown', this.onClearForm);
+	}
 
 	handlerOnChange = ({ target }) => {
 		this.setState({
@@ -58,30 +55,80 @@ class App extends Component {
 		});
 	};
 
-	handleAddContact = ({ name, number }) => {
-		this.setState(prevState => {
-			const newState = {
-				contacts: [
-					...prevState.contacts,
-					{
-						id: nanoid(),
-						name,
-						number,
-					},
-				],
-			};
+	handleAddContact = async newContact => {
+		try {
+			if (this.state.contact.edit) {
+				const { id, name, number } = newContact;
+				const edCont = { id, name, number };
+				const editItem = await API.fetchPut(edCont);
+				this.savedContact(editItem);
+			} else {
+				const newItem = await API.fetchPost(newContact);
+				this.savedContact(newItem);
+			}
+		} catch ({ message }) {
+			Notify.failure(`${message}`);
+		}
+	};
 
-			return newState;
+	handleEditContact = e => {
+		const value = e.currentTarget.dataset;
+		this.scrollToTop();
+		this.setState({
+			contact: { id: value.id, name: value.name, number: value.number, edit: true },
 		});
 	};
 
-	handleDelClick = e => {
-		this.setState(prevState => {
-			const updatedContacts = prevState.contacts.filter(
-				contact => contact.id !== e.target.id
-			);
-			return { contacts: updatedContacts };
-		});
+	onClearForm = ({ code }) => {
+		if (code === 'Escape') {
+			this.setState({
+				contact: { id: '', name: '', number: '', edit: false },
+			});
+		}
+	};
+
+	savedContact = ({ id, name, number }) => {
+		if (this.state.contact.edit) {
+			const newContacts = this.state.contacts.map(item => {
+				if (item.id === id) {
+					return { id, name, number };
+				} else return item;
+			});
+			this.setState({ contacts: newContacts, contact: { edit: false } });
+		} else {
+			this.setState(prevState => {
+				const newState = {
+					contacts: [
+						...prevState.contacts,
+						{
+							id,
+							name,
+							number,
+						},
+					],
+				};
+
+				return newState;
+			});
+		}
+	};
+
+	handleDelClick = async ({ target }) => {
+		this.setState({ active: true });
+		const updatedContacts = [];
+		for (const contact of this.state.contacts) {
+			if (contact.id === target.id) {
+				try {
+					await API.fetchDel(contact.id);
+				} catch ({ message }) {
+					Notify.failure('Removal error!');
+					updatedContacts.push(contact);
+				}
+			} else {
+				updatedContacts.push(contact);
+			}
+		}
+		this.setState({ contacts: updatedContacts, active: false });
 	};
 
 	handleClick = ({ target }) => {
@@ -89,12 +136,23 @@ class App extends Component {
 		setTimeout(() => (target.style.scale = '1'), 80);
 	};
 
+	scrollToTop() {
+		window.scrollTo({
+			top: 0,
+			behavior: 'smooth',
+		});
+	}
+
 	render() {
 		return (
 			<div className='container'>
 				<h1 className='title-name'>Phonebook</h1>
 
-				<ContactForm onSubmitForm={this.handleAddContact} contacts={this.state.contacts} />
+				<ContactForm
+					onSubmitForm={this.handleAddContact}
+					contacts={this.state.contacts}
+					onEditValue={this.state.contact}
+				/>
 
 				<h2 className='title-name'>Contacts</h2>
 
@@ -104,6 +162,8 @@ class App extends Component {
 					contacts={this.state.contacts}
 					filter={this.state.filter}
 					onDeleteContact={this.handleDelClick}
+					enable={this.state.active}
+					onEdit={this.handleEditContact}
 				/>
 			</div>
 		);
