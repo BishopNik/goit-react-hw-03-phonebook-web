@@ -131,11 +131,6 @@ class App extends Component {
 		this.setState({ contacts: updatedContacts, active: false });
 	};
 
-	handleClick = ({ target }) => {
-		target.style.scale = '0.9';
-		setTimeout(() => (target.style.scale = '1'), 80);
-	};
-
 	scrollToTop() {
 		window.scrollTo({
 			top: 0,
