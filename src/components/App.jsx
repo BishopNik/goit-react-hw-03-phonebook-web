@@ -20,6 +20,7 @@ class App extends Component {
 		contact: { id: '', name: '', number: '', edit: false },
 		filter: '',
 		active: false,
+		button: 'Add contact',
 	};
 
 	static propTypes = {
@@ -43,12 +44,6 @@ class App extends Component {
 		window.removeEventListener('keydown', this.onClearForm);
 	}
 
-	handlerOnChange = ({ target }) => {
-		this.setState({
-			[target.name]: target.value,
-		});
-	};
-
 	handlerOnFitred = ({ target }) => {
 		this.setState({
 			[target.name]: target.value,
@@ -62,6 +57,7 @@ class App extends Component {
 				const edCont = { id, name, number };
 				const editItem = await API.fetchPut(edCont);
 				this.savedContact(editItem);
+				this.setState({ button: 'Add contact' });
 			} else {
 				const newItem = await API.fetchPost(newContact);
 				this.savedContact(newItem);
@@ -74,6 +70,7 @@ class App extends Component {
 	handleEditContact = e => {
 		const value = e.currentTarget.dataset;
 		this.scrollToTop();
+		this.setState({ button: 'Edit contact' });
 		this.setState({
 			contact: { id: value.id, name: value.name, number: value.number, edit: true },
 		});
@@ -147,6 +144,7 @@ class App extends Component {
 					onSubmitForm={this.handleAddContact}
 					contacts={this.state.contacts}
 					onEditValue={this.state.contact}
+					buttonName={this.state.button}
 				/>
 
 				<h2 className='title-name'>Contacts</h2>

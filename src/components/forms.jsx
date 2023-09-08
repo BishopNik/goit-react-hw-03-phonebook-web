@@ -35,6 +35,7 @@ class ContactForm extends Component {
 			number: PropTypes.string,
 			edit: PropTypes.bool.isRequired,
 		}),
+		buttonName: PropTypes.string.isRequired,
 	};
 
 	schema = yup.object({
@@ -108,7 +109,7 @@ class ContactForm extends Component {
 					/>
 				</label>
 				<button className='add-contact button' type='submit' onClick={this.handleClick}>
-					Add contact
+					{this.props.buttonName}
 				</button>
 			</form>
 		);
