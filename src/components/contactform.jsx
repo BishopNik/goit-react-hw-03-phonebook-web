@@ -13,21 +13,7 @@ class ContactForm extends Component {
 		number: '',
 	};
 
-	componentDidUpdate = (prevProps, prevState) => {
-		const { id, name, number, edit } = this.props.onEditValue;
-		if (prevProps.onEditValue !== this.props.onEditValue && edit) {
-			this.setState({ id, name, number });
-		}
-	};
-
 	static propTypes = {
-		contacts: PropTypes.arrayOf(
-			PropTypes.exact({
-				id: PropTypes.string.isRequired,
-				name: PropTypes.string.isRequired,
-				number: PropTypes.string.isRequired,
-			})
-		).isRequired,
 		onSubmitForm: PropTypes.func.isRequired,
 		onEditValue: PropTypes.exact({
 			id: PropTypes.string,
@@ -36,6 +22,13 @@ class ContactForm extends Component {
 			edit: PropTypes.bool.isRequired,
 		}),
 		buttonName: PropTypes.string.isRequired,
+	};
+
+	componentDidUpdate = (prevProps, prevState) => {
+		const { id, name, number, edit } = this.props.onEditValue;
+		if (prevProps.onEditValue !== this.props.onEditValue && edit) {
+			this.setState({ id, name, number });
+		}
 	};
 
 	schema = yup.object({
@@ -62,15 +55,8 @@ class ContactForm extends Component {
 		this.schema
 			.validate(validateObj)
 			.then(() => {
-				const checkName = this.props.contacts.find(
-					contact => contact.name.toLowerCase() === this.state.name.toLowerCase()
-				);
-				if (checkName && !this.props.onEditValue.edit) {
-					alert(`${checkName.name} is already in contacts.`);
-					return;
-				}
-				this.props.onSubmitForm(this.state);
-				this.setState({ name: '', number: '' });
+				const res = this.props.onSubmitForm(this.state);
+				this.setState(res);
 			})
 			.catch(validationErrors => {
 				Notify.failure(`Error: ${validationErrors.errors}`);

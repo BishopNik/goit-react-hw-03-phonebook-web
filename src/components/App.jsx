@@ -1,12 +1,11 @@
 /** @format */
 
 import { Component } from 'react';
-import PropTypes from 'prop-types';
 import { Notify } from 'notiflix';
 import * as API from './fetch_api';
 import Filter from './filter';
-import ContactList from './contact';
-import ContactForm from './forms';
+import ContactList from './contactlist';
+import ContactForm from './contactform';
 import './style.css';
 
 class App extends Component {
@@ -21,11 +20,6 @@ class App extends Component {
 		filter: '',
 		active: false,
 		button: 'Add contact',
-	};
-
-	static propTypes = {
-		name: PropTypes.string,
-		number: PropTypes.string,
 	};
 
 	async componentDidMount() {
@@ -50,7 +44,15 @@ class App extends Component {
 		});
 	};
 
-	handleAddContact = async newContact => {
+	handlerFilter = () => {
+		return this.state.contacts.filter(contact => {
+			const searchName = contact.name.toLowerCase();
+			const filterName = this.state.filter.toLowerCase();
+			return searchName.includes(filterName);
+		});
+	};
+
+	addContact = async newContact => {
 		try {
 			if (this.state.contact.edit) {
 				const { id, name, number } = newContact;
@@ -67,7 +69,22 @@ class App extends Component {
 		}
 	};
 
+	handleAddContact = newContact => {
+		const checkName = this.state.contacts.find(
+			contact => contact.name.toLowerCase() === newContact.name.toLowerCase()
+		);
+		if (checkName && !this.state.contact.edit) {
+			alert(`${checkName.name} is already in contacts.`);
+			return newContact;
+		}
+		this.addContact(newContact);
+		return { name: '', number: '' };
+	};
+
 	handleEditContact = e => {
+		if (e.target.classList.contains('del-button')) {
+			return;
+		}
 		const value = e.currentTarget.dataset;
 		this.scrollToTop();
 		this.setState({ button: 'Edit contact' });
@@ -94,7 +111,7 @@ class App extends Component {
 			this.setState({ contacts: newContacts, contact: { edit: false } });
 		} else {
 			this.setState(prevState => {
-				const newState = {
+				return {
 					contacts: [
 						...prevState.contacts,
 						{
@@ -104,8 +121,6 @@ class App extends Component {
 						},
 					],
 				};
-
-				return newState;
 			});
 		}
 	};
@@ -142,7 +157,6 @@ class App extends Component {
 
 				<ContactForm
 					onSubmitForm={this.handleAddContact}
-					contacts={this.state.contacts}
 					onEditValue={this.state.contact}
 					buttonName={this.state.button}
 				/>
@@ -152,8 +166,7 @@ class App extends Component {
 				<Filter onFiltred={this.handlerOnFitred} value={this.state.filter} />
 
 				<ContactList
-					contacts={this.state.contacts}
-					filter={this.state.filter}
+					contacts={this.handlerFilter()}
 					onDeleteContact={this.handleDelClick}
 					enable={this.state.active}
 					onEdit={this.handleEditContact}
