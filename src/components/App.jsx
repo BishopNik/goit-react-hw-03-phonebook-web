@@ -26,7 +26,7 @@ class App extends Component {
 		try {
 			const savedContacts = await API.fetchGet();
 			if (savedContacts.length > 0) {
-				this.setState({ contacts: savedContacts, filter: '' });
+				this.setState({ contacts: savedContacts });
 			}
 		} catch ({ message }) {
 			Notify.failure(`${message}`);
