@@ -54,8 +54,8 @@ class ContactForm extends Component {
 
 		this.schema
 			.validate(validateObj)
-			.then(() => {
-				const res = this.props.onSubmitForm(this.state);
+			.then(async () => {
+				const res = await this.props.onSubmitForm(this.state);
 				this.setState(res);
 			})
 			.catch(validationErrors => {

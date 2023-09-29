@@ -60,6 +60,7 @@ class App extends Component {
 				const editItem = await API.fetchPut(edCont);
 				this.savedContact(editItem);
 				this.setState({ button: 'Add contact' });
+				this.setState({ active: false });
 			} else {
 				const newItem = await API.fetchPost(newContact);
 				this.savedContact(newItem);
@@ -78,6 +79,7 @@ class App extends Component {
 			return newContact;
 		}
 		this.addContact(newContact);
+		this.setState({ active: false });
 		return { name: '', number: '' };
 	};
 
@@ -87,6 +89,7 @@ class App extends Component {
 		}
 		const value = e.currentTarget.dataset;
 		this.scrollToTop();
+		this.setState({ active: true });
 		this.setState({ button: 'Edit contact' });
 		this.setState({
 			contact: { id: value.id, name: value.name, number: value.number, edit: true },
